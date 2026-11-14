@@ -114,7 +114,7 @@
       </button>
     </div>
 
-    <!-- Certificate Unlocked Section (Initially Hidden) -->
+    <!-- Certificate Unlocked Section (Strictly hidden until 2000 is reached) -->
     <div id="certificate-section" class="hidden mt-6 pt-5 border-t border-slate-700/70 animate-slide-up">
       <div class="bg-gradient-to-r from-amber-500/20 to-yellow-600/20 border border-amber-500/40 rounded-2xl p-4 text-center">
         <div class="text-3xl mb-1">🏆</div>
@@ -162,7 +162,7 @@
   <!-- Subtle Footer Info -->
   <footer class="mt-5 text-center max-w-sm px-2">
     <p id="pwa-helper-note" class="text-xs text-slate-500 leading-relaxed">
-      Paid User Program: Upon reaching 2000 iterations, your certificate unlocks and counter resets to 0.
+      Paid User Program: Iterate up to 2000 to unlock your certificate and reset counter to 0.
     </p>
   </footer>
 
@@ -359,14 +359,12 @@
 
     // WhatsApp Group Share Button (Downloads certificate & opens your specific group link)
     whatsappShareBtn.addEventListener('click', () => {
-      // 1. Trigger PNG download
       const dataUrl = generateCertificateDataURL();
       const link = document.createElement('a');
       link.download = `Winner-Certificate-2000-Iterations.png`;
       link.href = dataUrl;
       link.click();
 
-      // 2. Open your specific WhatsApp group link in a new tab
       setTimeout(() => {
         window.open('https://chat.whatsapp.com/IlY7m70zw0QHZeNnF2Isk7?s=cl&p=a&iam=2', '_blank');
       }, 500);
@@ -487,7 +485,7 @@
       }
 
       const swCode = `
-        const CACHE_NAME = 'counter-pwa-v4';
+        const CACHE_NAME = 'counter-pwa-v5';
         self.addEventListener('install', (event) => {
           self.skipWaiting();
           event.waitUntil(

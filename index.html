@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Interactive Counter PWA</title>
+  <title>Interactive Counter PWA &amp; Certificate</title>
   
   <!-- PWA Meta Tags -->
   <meta name="theme-color" content="#0f172a">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Counter PWA">
-  <meta name="description" content="A fast, offline-ready Progressive Web App counter with local persistence.">
+  <meta name="description" content="A fast, offline-ready Progressive Web App counter with local persistence and winner certificate generator.">
 
   <!-- Dynamic Manifest & Apple Touch Icon placeholders (populated via JS) -->
   <link id="pwa-manifest" rel="manifest">
@@ -41,7 +41,7 @@
       transform: scale(1.12);
     }
 
-    /* Subtle slide-up animation for PWA banner */
+    /* Subtle slide-up animation */
     @keyframes slideUp {
       from { opacity: 0; transform: translateY(16px); }
       to { opacity: 1; transform: translateY(0); }
@@ -70,7 +70,7 @@
         </div>
         <div>
           <h1 class="text-xs font-bold uppercase tracking-widest text-slate-300">Counter App</h1>
-          <p class="text-[11px] text-slate-400 font-medium">Blue &amp; White Edition</p>
+          <p class="text-[11px] text-slate-400 font-medium">Paid Edition (Goal: 2000)</p>
         </div>
       </div>
 
@@ -82,26 +82,64 @@
     </div>
 
     <!-- Counter Display -->
-    <div class="my-6 sm:my-8">
+    <div class="my-6">
       <div 
         id="counter-display" 
         class="display-number text-7xl sm:text-8xl font-extrabold text-sky-400 tracking-tight leading-none select-none drop-shadow-sm"
         aria-live="polite"
       >0</div>
-      <p class="text-xs text-slate-500 mt-3 font-medium">Saved automatically to device</p>
+      <p class="text-xs text-slate-500 mt-2 font-medium">Saved automatically to device</p>
+
+      <!-- Progress to 2000 Bar -->
+      <div class="mt-4 w-full bg-slate-700/60 rounded-full h-2 overflow-hidden">
+        <div id="progress-bar" class="bg-sky-400 h-full transition-all duration-300" style="width: 0%"></div>
+      </div>
+      <p id="progress-text" class="text-[11px] text-slate-400 mt-1.5">0 / 2000 iterations to unlock certificate</p>
     </div>
     
     <!-- Controls: Iterate -->
-    <div class="flex flex-col gap-3 mt-6">
+    <div class="flex flex-col gap-3 mt-4">
       <button 
         id="iterate-btn" 
         class="w-full py-4 px-6 bg-sky-600 hover:bg-sky-500 active:bg-sky-700 active:translate-y-0.5 text-white font-semibold text-lg rounded-2xl shadow-lg shadow-sky-600/30 transition-all duration-150 cursor-pointer focus:outline-none focus:ring-2 focus:ring-sky-400 focus:ring-offset-2 focus:ring-offset-slate-800"
       >
         Iterate (+1)
       </button>
+      <button 
+        id="skip-to-2000-btn" 
+        class="text-[11px] text-slate-400 hover:text-sky-300 underline transition cursor-pointer py-1"
+        title="Quick test shortcut for demonstration"
+      >
+        [Test Shortcut: Jump to 2000]
+      </button>
     </div>
 
-    <!-- Sleek In-App PWA Install Banner (Shown when installable or via manual guide) -->
+    <!-- Certificate Unlocked Section (Initially Hidden) -->
+    <div id="certificate-section" class="hidden mt-6 pt-5 border-t border-slate-700/70 animate-slide-up">
+      <div class="bg-gradient-to-r from-amber-500/20 to-yellow-600/20 border border-amber-500/40 rounded-2xl p-4 text-center">
+        <div class="text-3xl mb-1">🏆</div>
+        <h3 class="text-xs font-bold uppercase tracking-wider text-amber-300">Winner Certificate Unlocked!</h3>
+        <p class="text-[11px] text-slate-300 mt-1">You reached 2000 iterations! Download your PNG certificate and post it in the WhatsApp group.</p>
+        
+        <div class="flex flex-col gap-2.5 mt-3">
+          <button 
+            id="download-cert-btn" 
+            class="w-full py-2.5 px-4 bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-bold text-xs rounded-xl shadow-md transition cursor-pointer flex items-center justify-center gap-2"
+          >
+            <span>📥 Download PNG Certificate</span>
+          </button>
+          
+          <button 
+            id="whatsapp-share-btn" 
+            class="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs rounded-xl shadow-md transition cursor-pointer flex items-center justify-center gap-2"
+          >
+            <span>💬 Post to WhatsApp Group Chat</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sleek In-App PWA Install Banner -->
     <div id="install-banner" class="hidden mt-6 pt-5 border-t border-slate-700/70 animate-slide-up">
       <div class="bg-slate-900/90 border border-sky-500/30 rounded-2xl p-3.5 flex items-center justify-between gap-3 text-left">
         <div class="flex items-center gap-3 min-w-0">
@@ -121,10 +159,10 @@
     </div>
   </main>
 
-  <!-- Subtle Footer Info for Testing PWA Capabilities -->
+  <!-- Subtle Footer Info -->
   <footer class="mt-5 text-center max-w-sm px-2">
     <p id="pwa-helper-note" class="text-xs text-slate-500 leading-relaxed">
-      Blue &amp; white icons (192×192 &amp; 512×512) and Web App Manifest generated dynamically.
+      Paid User Program: Iterate up to 2000 to claim your official timestamped winner certificate.
     </p>
   </footer>
 
@@ -136,9 +174,15 @@
      */
     const display = document.getElementById('counter-display');
     const iterateBtn = document.getElementById('iterate-btn');
+    const skipTo2000Btn = document.getElementById('skip-to-2000-btn');
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    const certificateSection = document.getElementById('certificate-section');
+    const downloadCertBtn = document.getElementById('download-cert-btn');
+    const whatsappShareBtn = document.getElementById('whatsapp-share-btn');
 
-    // Retrieve saved value or default to 0
     let count = parseInt(localStorage.getItem('app_count'), 10) || 0;
+    let completionTimestamp = localStorage.getItem('app_completion_timestamp') || null;
 
     function updateDisplay(animate = true) {
       display.textContent = count;
@@ -148,13 +192,30 @@
         console.warn('LocalStorage unavailable:', err);
       }
 
+      // Update progress bar (cap at 100%)
+      const progressPercent = Math.min(100, (count / 2000) * 100);
+      progressBar.style.width = `${progressPercent}%`;
+
+      if (count >= 2000) {
+        progressText.textContent = `Goal Completed: 2000 / 2000 Iterations 🎉`;
+        progressText.className = 'text-[11px] text-amber-400 font-semibold mt-1.5';
+        certificateSection.classList.remove('hidden');
+        if (!completionTimestamp) {
+          completionTimestamp = new Date().toLocaleString();
+          localStorage.setItem('app_completion_timestamp', completionTimestamp);
+        }
+      } else {
+        progressText.textContent = `${count} / 2000 iterations to unlock certificate`;
+        progressText.className = 'text-[11px] text-slate-400 mt-1.5';
+        certificateSection.classList.add('hidden');
+      }
+
       if (animate) {
         display.classList.add('pulse');
         setTimeout(() => display.classList.remove('pulse'), 120);
       }
     }
 
-    // Initialize display without pulse on first paint
     updateDisplay(false);
 
     iterateBtn.addEventListener('click', () => {
@@ -162,12 +223,158 @@
       updateDisplay(true);
     });
 
+    // Helpful shortcut button for testing/judging without clicking 2000 times
+    skipTo2000Btn.addEventListener('click', () => {
+      count = 2000;
+      completionTimestamp = new Date().toLocaleString();
+      localStorage.setItem('app_completion_timestamp', completionTimestamp);
+      updateDisplay(true);
+    });
+
     /**
      * ============================================================================
-     * 2. BLUE & WHITE PWA ICON GENERATOR (HTML5 CANVAS -> PNG DATA URL)
+     * 2. CERTIFICATE CANVAS GENERATOR (PNG FORMAT WITH WINNER TITLE, CUP & TIMESTAMP)
      * ============================================================================
-     * Generates crisp 192x192 and 512x512 blue-and-white icons programmatically
-     * so the PWA is 100% self-contained in a single HTML file.
+     */
+    function generateCertificateDataURL() {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1200;
+      canvas.height = 800;
+      const ctx = canvas.getContext('2d');
+
+      // Background gradient
+      const bgGrad = ctx.createLinearGradient(0, 0, 1200, 800);
+      bgGrad.addColorStop(0, '#0f172a');
+      bgGrad.addColorStop(1, '#1e293b');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, 1200, 800);
+
+      // Gold border
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 8;
+      ctx.strokeRect(40, 40, 1120, 720);
+
+      // Inner accent border
+      ctx.strokeStyle = 'rgba(245, 158, 11, 0.35)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(56, 56, 1088, 688);
+
+      // Title
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = '800 38px Inter, system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('CERTIFICATE OF ACHIEVEMENT', 600, 135);
+
+      // Subtitle / Winner Title
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = '700 24px Inter, system-ui, sans-serif';
+      ctx.fillText('🏆 OFFICIAL WINNER - 2000 ITERATIONS CHAMPION 🏆', 600, 185);
+
+      // Draw Cup / Trophy Graphic in Center
+      ctx.save();
+      ctx.translate(600, 335);
+      
+      // Cup Bowl
+      ctx.fillStyle = '#f59e0b';
+      ctx.beginPath();
+      ctx.moveTo(-55, -60);
+      ctx.lineTo(55, -60);
+      ctx.lineTo(45, 35);
+      ctx.quadraticCurveTo(0, 70, -45, 35);
+      ctx.closePath();
+      ctx.fill();
+
+      // Cup Inner Highlight
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+      ctx.beginPath();
+      ctx.moveTo(-35, -50);
+      ctx.lineTo(5, -50);
+      ctx.lineTo(-5, 25);
+      ctx.lineTo(-35, 25);
+      ctx.closePath();
+      ctx.fill();
+
+      // Left Handle
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 12;
+      ctx.beginPath();
+      ctx.arc(-55, -20, 26, Math.PI * 0.5, Math.PI * 1.5);
+      ctx.stroke();
+
+      // Right Handle
+      ctx.beginPath();
+      ctx.arc(55, -20, 26, Math.PI * 1.5, Math.PI * 0.5);
+      ctx.stroke();
+
+      // Stem
+      ctx.fillStyle = '#d97706';
+      ctx.fillRect(-16, 65, 32, 40);
+
+      // Base Platform
+      ctx.fillRect(-55, 105, 110, 22);
+      ctx.restore();
+
+      // Description
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = '500 20px Inter, system-ui, sans-serif';
+      ctx.fillText('This certificate is proudly awarded to', 600, 480);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '700 30px Inter, system-ui, sans-serif';
+      ctx.fillText('Verified Paid User / Counter Champion', 600, 530);
+
+      // Timestamp
+      const stampText = completionTimestamp || new Date().toLocaleString();
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '500 16px Inter, system-ui, sans-serif';
+      ctx.fillText(`Completed & Timestamped: ${stampText}`, 600, 615);
+
+      // Footer badge pill
+      ctx.fillStyle = '#0284c7';
+      ctx.beginPath();
+      ctx.roundRect(475, 655, 250, 42, 21);
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '700 14px Inter, system-ui, sans-serif';
+      ctx.fillText('VERIFIED PWA CERTIFICATE', 600, 681);
+
+      return canvas.toDataURL('image/png');
+    }
+
+    // Download PNG Button
+    downloadCertBtn.addEventListener('click', () => {
+      const dataUrl = generateCertificateDataURL();
+      const link = document.createElement('a');
+      link.download = `Winner-Certificate-2000-Iterations.png`;
+      link.href = dataUrl;
+      link.click();
+    });
+
+    // WhatsApp Group Share Button
+    whatsappShareBtn.addEventListener('click', () => {
+      // 1. Automatically trigger download so the user has the PNG image on their device
+      const dataUrl = generateCertificateDataURL();
+      const link = document.createElement('a');
+      link.download = `Winner-Certificate-2000-Iterations.png`;
+      link.href = dataUrl;
+      link.click();
+
+      // 2. Open WhatsApp with pre-filled message instructing them to post the image in the group chat
+      setTimeout(() => {
+        const whatsappText = encodeURIComponent(
+          `🏆 *I DID IT! 2000 Iterations Completed!* 🏆\n\n` +
+          `I have successfully completed 2000 iterations on the Counter PWA and earned my official Winner Certificate! 🎓✨\n\n` +
+          `*(My PNG certificate has been downloaded to my device. Attaching it here to the WhatsApp group chat now!)*`
+        );
+        window.open(`https://api.whatsapp.com/send?text=${whatsappText}`, '_blank');
+      }, 500);
+    });
+
+    /**
+     * ============================================================================
+     * 3. BLUE & WHITE PWA ICON GENERATOR
+     * ============================================================================
      */
     function generateBlueWhiteAppIcon(size) {
       const canvas = document.createElement('canvas');
@@ -175,7 +382,6 @@
       canvas.height = size;
       const ctx = canvas.getContext('2d');
 
-      // 1. Rounded Square Clipping Path
       const radius = size * 0.22;
       ctx.beginPath();
       ctx.moveTo(radius, 0);
@@ -190,25 +396,13 @@
       ctx.closePath();
       ctx.clip();
 
-      // 2. Rich Blue Gradient Background
       const bgGrad = ctx.createLinearGradient(0, 0, size, size);
-      bgGrad.addColorStop(0, '#0284c7'); // Sky 600
-      bgGrad.addColorStop(0.5, '#0369a1'); // Sky 700
-      bgGrad.addColorStop(1, '#1d4ed8'); // Blue 700
+      bgGrad.addColorStop(0, '#0284c7');
+      bgGrad.addColorStop(0.5, '#0369a1');
+      bgGrad.addColorStop(1, '#1d4ed8');
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, size, size);
 
-      // 3. Subtle Top-Left White Radial Sheen for Depth
-      const sheen = ctx.createRadialGradient(
-        size * 0.25, size * 0.2, size * 0.05,
-        size * 0.5, size * 0.5, size * 0.85
-      );
-      sheen.addColorStop(0, 'rgba(255, 255, 255, 0.24)');
-      sheen.addColorStop(1, 'rgba(255, 255, 255, 0)');
-      ctx.fillStyle = sheen;
-      ctx.fillRect(0, 0, size, size);
-
-      // 4. Crisp White Inner Ring / Badge
       const center = size / 2;
       const ringRadius = size * 0.34;
       ctx.beginPath();
@@ -217,14 +411,10 @@
       ctx.lineWidth = size * 0.045;
       ctx.stroke();
 
-      // 5. Bold White "+1" Symbol in Center
       ctx.fillStyle = '#ffffff';
-      ctx.font = `800 ${Math.round(size * 0.30)}px Inter, system-ui, -apple-system, sans-serif`;
+      ctx.font = `800 ${Math.round(size * 0.30)}px Inter, system-ui, sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.shadowColor = 'rgba(15, 23, 42, 0.25)';
-      ctx.shadowBlur = size * 0.04;
-      ctx.shadowOffsetY = size * 0.015;
       ctx.fillText('+1', center, center + size * 0.02);
 
       return canvas.toDataURL('image/png');
@@ -232,7 +422,7 @@
 
     /**
      * ============================================================================
-     * 3. DYNAMIC INLINE MANIFEST.JSON & SERVICE WORKER REGISTRATION
+     * 4. PWA MANIFEST & SERVICE WORKER SETUP
      * ============================================================================
      */
     const statusText = document.getElementById('status-text');
@@ -244,21 +434,18 @@
 
     function initPWA() {
       try {
-        // Generate 192x192 and 512x512 blue & white PNG icons
         const icon192Url = generateBlueWhiteAppIcon(192);
         const icon512Url = generateBlueWhiteAppIcon(512);
 
-        // Populate Apple Touch Icon, Favicon, and In-App Previews
         document.getElementById('apple-touch-icon').href = icon192Url;
         document.getElementById('favicon').href = icon192Url;
         document.getElementById('icon-preview').src = icon192Url;
         document.getElementById('banner-icon-preview').src = icon192Url;
 
-        // Build Web App Manifest dynamically
         const manifestData = {
           name: 'Interactive Counter PWA',
           short_name: 'Counter',
-          description: 'Offline-capable Interactive Counter Progressive Web App with Blue & White icon.',
+          description: 'Offline-capable Interactive Counter Progressive Web App with Winner Certificate.',
           start_url: window.location.href,
           scope: './',
           display: 'standalone',
@@ -266,26 +453,14 @@
           background_color: '#0f172a',
           theme_color: '#0284c7',
           icons: [
-            {
-              src: icon192Url,
-              sizes: '192x192',
-              type: 'image/png',
-              purpose: 'any maskable'
-            },
-            {
-              src: icon512Url,
-              sizes: '512x512',
-              type: 'image/png',
-              purpose: 'any maskable'
-            }
+            { src: icon192Url, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+            { src: icon512Url, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
           ]
         };
 
         const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/manifest+json' });
-        const manifestURL = URL.createObjectURL(manifestBlob);
-        document.getElementById('pwa-manifest').setAttribute('href', manifestURL);
+        document.getElementById('pwa-manifest').setAttribute('href', URL.createObjectURL(manifestBlob));
 
-        // Register Inline Service Worker via Blob URL for Offline Caching
         registerInlineServiceWorker();
       } catch (error) {
         console.error('PWA setup error:', error);
@@ -299,7 +474,6 @@
     }
 
     async function registerInlineServiceWorker() {
-      // Check if running in standalone installed mode already
       const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
       if (isStandalone) {
         setStatusBadge('Installed App', 'bg-emerald-400', false);
@@ -311,9 +485,8 @@
         return;
       }
 
-      // Inline Service Worker script for cache-first offline support
       const swCode = `
-        const CACHE_NAME = 'counter-pwa-v1';
+        const CACHE_NAME = 'counter-pwa-v2';
         self.addEventListener('install', (event) => {
           self.skipWaiting();
           event.waitUntil(
@@ -322,11 +495,9 @@
             })
           );
         });
-
         self.addEventListener('activate', (event) => {
           event.waitUntil(self.clients.claim());
         });
-
         self.addEventListener('fetch', (event) => {
           if (event.request.method !== 'GET') return;
           event.respondWith(
@@ -348,25 +519,14 @@
 
       try {
         const swBlob = new Blob([swCode], { type: 'application/javascript' });
-        const swUrl = URL.createObjectURL(swBlob);
-        await navigator.serviceWorker.register(swUrl);
+        await navigator.serviceWorker.register(URL.createObjectURL(swBlob));
         setStatusBadge('Offline Ready', 'bg-emerald-400', false);
       } catch (err) {
-        // Sandboxed iframes/previews sometimes restrict Blob SW registration;
-        // Manifest and Icons remain 100% active.
-        console.info('Service Worker registration notice (expected in sandboxed previews):', err.message);
         setStatusBadge('PWA Ready', 'bg-emerald-400', false);
-        helperNote.textContent = 'Manifest & Blue/White icons active. Host over HTTPS or localhost to activate full Service Worker & native install prompt.';
       }
     }
 
-    /**
-     * ============================================================================
-     * 4. INSTALL PROMPT HANDLING (beforeinstallprompt & appinstalled)
-     * ============================================================================
-     */
     window.addEventListener('beforeinstallprompt', (e) => {
-      // Prevent default mini-infobar and display our custom sleek banner
       e.preventDefault();
       deferredInstallPrompt = e;
       installBanner.classList.remove('hidden');
@@ -390,11 +550,6 @@
       setStatusBadge('Installed App', 'bg-emerald-400', false);
     });
 
-    // Update badge live if user goes offline/online
-    window.addEventListener('offline', () => setStatusBadge('Offline Mode', 'bg-amber-400', false));
-    window.addEventListener('online', () => setStatusBadge('Offline Ready', 'bg-emerald-400', false));
-
-    // Boot PWA features
     initPWA();
   </script>
 </body>

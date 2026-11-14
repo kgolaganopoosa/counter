@@ -162,7 +162,7 @@
   <!-- Subtle Footer Info -->
   <footer class="mt-5 text-center max-w-sm px-2">
     <p id="pwa-helper-note" class="text-xs text-slate-500 leading-relaxed">
-      Paid User Program: Upon reaching 2000 iterations, your certificate unlocks and the counter resets to 0.
+      Paid User Program: Upon reaching 2000 iterations, your certificate unlocks and counter resets to 0.
     </p>
   </footer>
 
@@ -357,21 +357,18 @@
       link.click();
     });
 
-    // WhatsApp Group Share Button
+    // WhatsApp Group Share Button (Downloads certificate & opens your specific group link)
     whatsappShareBtn.addEventListener('click', () => {
+      // 1. Trigger PNG download
       const dataUrl = generateCertificateDataURL();
       const link = document.createElement('a');
       link.download = `Winner-Certificate-2000-Iterations.png`;
       link.href = dataUrl;
       link.click();
 
+      // 2. Open your specific WhatsApp group link in a new tab
       setTimeout(() => {
-        const whatsappText = encodeURIComponent(
-          `🏆 *I DID IT! 2000 Iterations Completed!* 🏆\n\n` +
-          `I have successfully completed 2000 iterations on the Counter PWA and earned my official Winner Certificate! 🎓✨\n\n` +
-          `*(My PNG certificate has been downloaded to my device. Attaching it here to the WhatsApp group chat now!)*`
-        );
-        window.open(`https://api.whatsapp.com/send?text=${whatsappText}`, '_blank');
+        window.open('https://chat.whatsapp.com/IlY7m70zw0QHZeNnF2Isk7?s=cl&p=a&iam=2', '_blank');
       }, 500);
     });
 
@@ -490,7 +487,7 @@
       }
 
       const swCode = `
-        const CACHE_NAME = 'counter-pwa-v3';
+        const CACHE_NAME = 'counter-pwa-v4';
         self.addEventListener('install', (event) => {
           self.skipWaiting();
           event.waitUntil(
